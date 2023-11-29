@@ -52,14 +52,13 @@ export default defineComponent({
                 })
             } else {
                 //ADICIONANDO PROJETO
-                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto)
-
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => {
+                    this.nomeDoProjeto = '';
+                    this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+                    this.$router.push('/projetos')
+                })
             }
-            this.nomeDoProjeto = '',
-                this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
-            this.$router.push('/projetos')
         },
-
     },
     setup() {
         const store = useStore();

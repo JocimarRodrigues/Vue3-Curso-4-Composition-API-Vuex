@@ -51,7 +51,7 @@ export const store = createStore<Estado>({
       http.get('projetos').then(resposta => commit(DEFINIR_PROJETOS, resposta.data))
     },
     [CADASTRAR_PROJETO](contexto, nomeDoProjeto: string) {
-      http.post('/projetos', {
+      return http.post('/projetos', {
         nome: nomeDoProjeto
       })
     }

@@ -328,3 +328,77 @@ export default defineComponent({
 
 
 ```
+
+### Refatorando método post para lidar com possíveis erros caso a api esteja off
+
+- Tu vai retornar o método post para poder usar ele em outra parte do código
+- No método disptach tu também pode usar o then e o cath, assim tu consegue lidar com erros e essa vai ser a lógica que tu vai usar
+
+#### Passo 1
+store/index.ts
+```ts
+    [CADASTRAR_PROJETO](contexto, nomeDoProjeto: string) {
+      return http.post('/projetos', {
+        nome: nomeDoProjeto
+      })
+    }
+```
+
+#### Passo 2
+projetos/formulario.vue
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useStore } from '@/store';
+import { ALTERA_PROJETO } from '@/store/tipo-mutations';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+import useNotificador from '@/hooks/notificador'
+import { CADASTRAR_PROJETO } from '@/store/tipo-acoes';
+
+export default defineComponent({
+    name: 'FormularioView',
+    props: {
+        id: {
+            type: String
+        }
+    },
+    mounted() {
+        if (this.id) {
+            const projeto = this.store.state.projetos.find(proj => proj.id == this.id)
+            this.nomeDoProjeto = projeto?.nome || ''
+        }
+    },
+    data() {
+        return {
+            nomeDoProjeto: '',
+        }
+    },
+    methods: {
+        salvar() {
+            if (this.id) {
+                this.store.commit(ALTERA_PROJETO, {
+                    id: this.id,
+                    nome: this.nomeDoProjeto
+                })
+            } else {
+              // AQUI, USANDO O THEN
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => {
+                    this.nomeDoProjeto = '',
+                    this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+                    this.$router.push('/projetos')
+                })
+            }
+        },
+
+    },
+    setup() {
+        const store = useStore();
+        const { notificar } = useNotificador()
+        return {
+            store,
+            notificar
+        }
+    }
+})
+</script>
+```
