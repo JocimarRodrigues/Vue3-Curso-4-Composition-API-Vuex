@@ -19,9 +19,10 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useStore } from '@/store';
-import { ADICIONA_PROJETO, ALTERA_PROJETO } from '@/store/tipo-mutations';
+import { ALTERA_PROJETO } from '@/store/tipo-mutations';
 import { TipoNotificacao } from '@/interfaces/INotificacao';
 import useNotificador from '@/hooks/notificador'
+import { CADASTRAR_PROJETO } from '@/store/tipo-acoes';
 
 export default defineComponent({
     name: 'FormularioView',
@@ -51,7 +52,7 @@ export default defineComponent({
                 })
             } else {
                 //ADICIONANDO PROJETO
-                this.store.commit(ADICIONA_PROJETO, this.nomeDoProjeto)
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto)
 
             }
             this.nomeDoProjeto = '',

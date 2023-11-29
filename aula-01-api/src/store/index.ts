@@ -4,7 +4,7 @@ import { createStore, Store, useStore as vuexUseStore } from 'vuex'
 import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO, NOTIFICAR, DEFINIR_PROJETOS } from './tipo-mutations'
 import {INotificao} from '@/interfaces/INotificacao'
 import http from '@/http'
-import { OBTER_PROJETOS } from './tipo-acoes'
+import { OBTER_PROJETOS, CADASTRAR_PROJETO } from './tipo-acoes'
 
 
 interface Estado {
@@ -49,6 +49,11 @@ export const store = createStore<Estado>({
   actions: {
     [OBTER_PROJETOS]({commit}) {
       http.get('projetos').then(resposta => commit(DEFINIR_PROJETOS, resposta.data))
+    },
+    [CADASTRAR_PROJETO](contexto, nomeDoProjeto: string) {
+      http.post('/projetos', {
+        nome: nomeDoProjeto
+      })
     }
   }
 })

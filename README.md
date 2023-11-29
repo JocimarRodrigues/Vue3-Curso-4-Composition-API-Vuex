@@ -182,3 +182,149 @@ export function useStore(): Store<Estado> {
 - Note que a tua action OBTER_PROJETOS tá fazendo um get pra api, pegando o valor dela e passando como parametro para a mutation DEFINIR_PROJETOS(Usando o commit para isso)
 - Depois a tua mutation DEFINIR_PROJETOS está pegando esse valor vindo da api e adicionando ao estado dentro dela, assim concluindo a lógica.
 - Novamente lembrar de não confundir as açÕes de cada uma, mutation não pode ser assincrona e é ela quem é responsável por mudar o estado, já as actions podem ser assíncronas e elas que vão ser as responsáveis por utilizar os protocolos http 
+
+# Criando Método POST
+
+## Passo 1 cria a action
+```ts
+import type IProjeto from '@/interfaces/IProjeto'
+import type { InjectionKey } from 'vue'
+import { createStore, Store, useStore as vuexUseStore } from 'vuex'
+import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO, NOTIFICAR, DEFINIR_PROJETOS } from './tipo-mutations'
+import {INotificao} from '@/interfaces/INotificacao'
+import http from '@/http'
+import { OBTER_PROJETOS, CADASTRAR_PROJETO } from './tipo-acoes'
+
+
+interface Estado {
+  projetos: IProjeto[],
+  notificacoes: INotificao[],
+}
+
+export const key: InjectionKey<Store<Estado>> = Symbol()
+
+export const store = createStore<Estado>({
+  state: {
+    projetos: [],
+    notificacoes: [],
+  },
+  mutations: {
+    [ADICIONA_PROJETO](state, nomeDoProjeto: string) {
+      const projeto = {
+        id: new Date().toISOString(),
+        nome: nomeDoProjeto
+      } as IProjeto
+      state.projetos.push(projeto)
+    },
+    [ALTERA_PROJETO](state, projeto: IProjeto) {
+      const index = state.projetos.findIndex(proj => proj.id == projeto.id)
+      state.projetos[index] = projeto
+    },
+    [EXCLUIR_PROJETO](state, id: string) {
+      state.projetos = state.projetos.filter(proj => proj.id != id)
+    },
+    [DEFINIR_PROJETOS](state, projetos: IProjeto[]) {
+      state.projetos = projetos
+    },
+    [NOTIFICAR](state, novaNotificacao: INotificao) {
+      novaNotificacao.id = new Date().getTime()
+      state.notificacoes.push(novaNotificacao)
+
+      setTimeout(() => {
+        state.notificacoes = state.notificacoes.filter(notificao => notificao.id !== novaNotificacao.id)
+      }, 3000)
+    }
+  },
+  actions: {
+    [OBTER_PROJETOS]({commit}) {
+      http.get('projetos').then(resposta => commit(DEFINIR_PROJETOS, resposta.data))
+    },
+    [CADASTRAR_PROJETO](contexto, nomeDoProjeto: string) { // PASSO 1 AQUI
+      http.post('/projetos', {
+        nome: nomeDoProjeto
+      })
+    }
+  }
+})
+
+export function useStore(): Store<Estado> {
+  return vuexUseStore(key)
+}
+```
+
+## Passo 2, usa essa action na mutation dentro do componente que está criando a lógica de adicionar projeto no caso o projetos/formulario.vue
+```vue
+<template>
+    <section>
+        <form @submit.prevent="salvar">
+            <div class="field">
+                <label for="nomeDoProjeto" class="label">
+                    Nome do Projeto
+                </label>
+                <input type="text" class="input" v-model="nomeDoProjeto" id="nomeDoProjeto" />
+            </div>
+            <div class="field">
+                <button class="button" type="submit">
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </section>
+</template>
+
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useStore } from '@/store';
+import { ALTERA_PROJETO } from '@/store/tipo-mutations';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+import useNotificador from '@/hooks/notificador'
+import { CADASTRAR_PROJETO } from '@/store/tipo-acoes';
+
+export default defineComponent({
+    name: 'FormularioView',
+    props: {
+        id: {
+            type: String
+        }
+    },
+    mounted() {
+        if (this.id) {
+            const projeto = this.store.state.projetos.find(proj => proj.id == this.id)
+            this.nomeDoProjeto = projeto?.nome || ''
+        }
+    },
+    data() {
+        return {
+            nomeDoProjeto: '',
+        }
+    },
+    methods: {
+        salvar() {
+            if (this.id) {
+                this.store.commit(ALTERA_PROJETO, {
+                    id: this.id,
+                    nome: this.nomeDoProjeto
+                })
+            } else {
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto) // PASSO 2 AQUI
+
+            }
+            this.nomeDoProjeto = '',
+                this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+            this.$router.push('/projetos')
+        },
+
+    },
+    setup() {
+        const store = useStore();
+        const { notificar } = useNotificador()
+        return {
+            store,
+            notificar
+        }
+    }
+})
+</script>
+
+
+```
