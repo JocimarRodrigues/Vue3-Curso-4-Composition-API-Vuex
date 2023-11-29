@@ -19,10 +19,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { useStore } from '@/store';
-import { ALTERA_PROJETO } from '@/store/tipo-mutations';
 import { TipoNotificacao } from '@/interfaces/INotificacao';
 import useNotificador from '@/hooks/notificador'
-import { CADASTRAR_PROJETO } from '@/store/tipo-acoes';
+import { CADASTRAR_PROJETO, ALTERAR_PROJETO } from '@/store/tipo-acoes';
 
 export default defineComponent({
     name: 'FormularioView',
@@ -45,20 +44,20 @@ export default defineComponent({
     methods: {
         salvar() {
             if (this.id) {
-                //EDIÇÃO
-                this.store.commit(ALTERA_PROJETO, {
+                this.store.dispatch(ALTERAR_PROJETO, {
                     id: this.id,
-                    nome: this.nomeDoProjeto
-                })
+                    nome: this.nomeDoProjeto,
+                }).then(() => this.lidarComSucesso());
             } else {
                 //ADICIONANDO PROJETO
-                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => {
-                    this.nomeDoProjeto = '';
-                    this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
-                    this.$router.push('/projetos')
-                })
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => this.lidarComSucesso());
             }
         },
+        lidarComSucesso() {
+            this.nomeDoProjeto = '';
+            this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+            this.$router.push('/projetos')
+        }
     },
     setup() {
         const store = useStore();

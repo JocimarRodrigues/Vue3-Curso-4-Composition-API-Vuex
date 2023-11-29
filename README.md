@@ -402,3 +402,193 @@ export default defineComponent({
 })
 </script>
 ```
+
+## Criando método PUT
+
+- Vai ser bem semelhante ao POST
+- A diferença é q tu usa template string, passa o id e como segundo parametro o item com as propriedades novas q irão vir do front.
+store/index.ts
+```ts
+    [ALTERAR_PROJETO](contexto, projeto: IProjeto) {
+      return http.put(`/projetos/${projeto.id}`, projeto);
+    },
+```
+- Depois da action basta chamar ela na mutation
+
+projetos/Formulario.vue
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useStore } from '@/store';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+import useNotificador from '@/hooks/notificador'
+import { CADASTRAR_PROJETO, ALTERAR_PROJETO } from '@/store/tipo-acoes';
+
+export default defineComponent({
+    name: 'FormularioView',
+    props: {
+        id: {
+            type: String
+        }
+    },
+    mounted() {
+        if (this.id) {
+            const projeto = this.store.state.projetos.find(proj => proj.id == this.id)
+            this.nomeDoProjeto = projeto?.nome || ''
+        }
+    },
+    data() {
+        return {
+            nomeDoProjeto: '',
+        }
+    },
+    methods: {
+        salvar() {
+            if (this.id) {
+                this.store.dispatch(ALTERAR_PROJETO, { // AQUI
+                    id: this.id,
+                    nome: this.nomeDoProjeto
+                })
+            } else {
+                //ADICIONANDO PROJETO
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => {
+                    this.nomeDoProjeto = '';
+                    this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+                    this.$router.push('/projetos')
+                })
+            }
+        },
+    },
+    setup() {
+        const store = useStore();
+        const { notificar } = useNotificador()
+        return {
+            store,
+            notificar
+        }
+    }
+})
+</script>
+```
+
+### Reaproveitando a função de notificar
+
+- Note que a funcao notificar, vai ser usada tanto no post como no put e tu quer reaproveitar ela, para fazer isso em vez de tu criar ela denrto da lógica, cria ela como uma função dentro do methods, assim tu pode usar ela em qualquer parte do componente.
+
+
+#### REFATORADO
+projetos/Formulario.vue
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useStore } from '@/store';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+import useNotificador from '@/hooks/notificador'
+import { CADASTRAR_PROJETO, ALTERAR_PROJETO } from '@/store/tipo-acoes';
+
+export default defineComponent({
+    name: 'FormularioView',
+    props: {
+        id: {
+            type: String
+        }
+    },
+    mounted() {
+        if (this.id) {
+            const projeto = this.store.state.projetos.find(proj => proj.id == this.id)
+            this.nomeDoProjeto = projeto?.nome || ''
+        }
+    },
+    data() {
+        return {
+            nomeDoProjeto: '',
+        }
+    },
+    methods: {
+        salvar() {
+            if (this.id) {
+                this.store.dispatch(ALTERAR_PROJETO, {
+                    id: this.id,
+                    nome: this.nomeDoProjeto
+                }).then(() => this.lidarComSucesso()) // AQUI
+            } else {
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => this.lidarComSucesso()) // AQUI
+            }
+        },
+        lidarComSucesso() { // AQUI
+            this.nomeDoProjeto = '';
+                    this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+                    this.$router.push('/projetos')
+        }
+    },
+    setup() {
+        const store = useStore();
+        const { notificar } = useNotificador()
+        return {
+            store,
+            notificar
+        }
+    }
+})
+</script>
+
+```
+
+#### SEM REFATORAR
+
+projetos/Formulario.vue
+```vue
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { useStore } from '@/store';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+import useNotificador from '@/hooks/notificador'
+import { CADASTRAR_PROJETO, ALTERAR_PROJETO } from '@/store/tipo-acoes';
+
+export default defineComponent({
+    name: 'FormularioView',
+    props: {
+        id: {
+            type: String
+        }
+    },
+    mounted() {
+        if (this.id) {
+            const projeto = this.store.state.projetos.find(proj => proj.id == this.id)
+            this.nomeDoProjeto = projeto?.nome || ''
+        }
+    },
+    data() {
+        return {
+            nomeDoProjeto: '',
+        }
+    },
+    methods: {
+        salvar() {
+            if (this.id) {
+                this.store.dispatch(ALTERAR_PROJETO, {
+                    id: this.id,
+                    nome: this.nomeDoProjeto
+                })
+            } else {
+                //ADICIONANDO PROJETO
+                this.store.dispatch(CADASTRAR_PROJETO, this.nomeDoProjeto).then(() => {
+                    this.nomeDoProjeto = '';
+                    this.notificar(TipoNotificacao.SUCESSO, 'Excelente', 'O projeto foi cadastrado com sucesso')
+                    this.$router.push('/projetos')
+                })
+            }
+        },
+    },
+    setup() {
+        const store = useStore();
+        const { notificar } = useNotificador()
+        return {
+            store,
+            notificar
+        }
+    }
+})
+</script>
+
+```
