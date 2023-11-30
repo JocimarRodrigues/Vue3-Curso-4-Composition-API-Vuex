@@ -15,7 +15,8 @@ import Tarefa from '../components/Tarefa.vue';
 import type ITarefa from '../interfaces/ITarefa'
 import Box from '../components/Box.vue';
 import { useStore } from '@/store';
-import { OBTER_TAREFAS } from '@/store/tipo-acoes';
+import { OBTER_TAREFAS, CADASTRAR_TAREFA } from '@/store/tipo-acoes';
+
 
 export default defineComponent({
     name: 'TarefasView',
@@ -31,7 +32,7 @@ export default defineComponent({
     },
     methods: {
         salvarTarefa(tarefa: ITarefa) {
-            this.tarefas.push(tarefa)
+           this.store.dispatch(CADASTRAR_TAREFA, tarefa)
         },
     },
     setup() {
