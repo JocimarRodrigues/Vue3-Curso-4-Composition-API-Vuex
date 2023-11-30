@@ -1,14 +1,16 @@
 import type IProjeto from '@/interfaces/IProjeto'
 import type { InjectionKey } from 'vue'
 import { createStore, Store, useStore as vuexUseStore } from 'vuex'
-import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO, NOTIFICAR, DEFINIR_PROJETOS } from './tipo-mutations'
-import {INotificao} from '@/interfaces/INotificacao'
+import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO, NOTIFICAR, DEFINIR_PROJETOS, DEFINIR_TAREFAS } from './tipo-mutations'
+import { INotificao } from "@/interfaces/INotificacao";
+import  ITarefa  from "@/interfaces/ITarefa";
 import http from '@/http'
-import { OBTER_PROJETOS, CADASTRAR_PROJETO, ALTERAR_PROJETO, REMOVER_PROJETO } from './tipo-acoes'
+import { OBTER_PROJETOS, CADASTRAR_PROJETO, ALTERAR_PROJETO, REMOVER_PROJETO, OBTER_TAREFAS } from './tipo-acoes'
 
 
 interface Estado {
   projetos: IProjeto[],
+  tarefas: ITarefa[],
   notificacoes: INotificao[],
 }
 
@@ -16,6 +18,7 @@ export const key: InjectionKey<Store<Estado>> = Symbol()
 
 export const store = createStore<Estado>({
   state: {
+    tarefas: [],
     projetos: [],
     notificacoes: [],
   },
@@ -36,6 +39,9 @@ export const store = createStore<Estado>({
     },
     [DEFINIR_PROJETOS](state, projetos: IProjeto[]) {
       state.projetos = projetos;
+    },
+    [DEFINIR_TAREFAS](state, tarefas: ITarefa[]) {
+      state.tarefas = tarefas;
     },
     [NOTIFICAR](state, novaNotificacao: INotificao) {
       novaNotificacao.id = new Date().getTime();
@@ -64,6 +70,11 @@ export const store = createStore<Estado>({
     },
     [REMOVER_PROJETO]({commit}, id: string) {
       return http.delete(`/projetos/${id}`).then(() => commit(EXCLUIR_PROJETO, id))
+    },
+    [OBTER_TAREFAS]({ commit }) {
+      http
+        .get("tarefas")
+        .then((resposta) => commit(DEFINIR_TAREFAS, resposta.data));
     },
   },
 });
