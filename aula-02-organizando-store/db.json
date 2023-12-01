@@ -5,7 +5,12 @@
       "nome": "Alura Tracker"
     },
     {
-      "nome": "Alura",
+      "duracaoEmSegundos": 2,
+      "descricao": "Refatorando vuexz",
+      "projeto": {
+        "id": 1,
+        "nome": "Alura Tracker"
+      },
       "id": 2
     }
   ],

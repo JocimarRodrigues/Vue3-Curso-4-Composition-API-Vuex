@@ -1,11 +1,11 @@
 import type IProjeto from '@/interfaces/IProjeto'
 import type { InjectionKey } from 'vue'
 import { createStore, Store, useStore as vuexUseStore } from 'vuex'
-import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO, NOTIFICAR, DEFINIR_PROJETOS, DEFINIR_TAREFAS, ADICIONA_TAREFA } from './tipo-mutations'
+import { ADICIONA_PROJETO, ALTERA_PROJETO, EXCLUIR_PROJETO, NOTIFICAR, DEFINIR_PROJETOS, DEFINIR_TAREFAS, ADICIONA_TAREFA, ALTERA_TAREFA } from './tipo-mutations'
 import { INotificao } from "@/interfaces/INotificacao";
 import  ITarefa  from "@/interfaces/ITarefa";
 import http from '@/http'
-import { OBTER_PROJETOS, CADASTRAR_PROJETO, ALTERAR_PROJETO, REMOVER_PROJETO, OBTER_TAREFAS, CADASTRAR_TAREFA } from './tipo-acoes'
+import { OBTER_PROJETOS, CADASTRAR_PROJETO, ALTERAR_PROJETO, REMOVER_PROJETO, OBTER_TAREFAS, CADASTRAR_TAREFA, ALTERAR_TAREFA } from './tipo-acoes'
 
 
 interface Estado {
@@ -46,6 +46,10 @@ export const store = createStore<Estado>({
     [ADICIONA_TAREFA](state, tarefa: ITarefa) {
       state.tarefas.push(tarefa)
     },
+    [ALTERA_TAREFA](state, tarefa: ITarefa) {
+      const index = state.tarefas.findIndex((resp) => resp.id == tarefa.id);
+      state.tarefas[index] = tarefa;
+    },
     [NOTIFICAR](state, novaNotificacao: INotificao) {
       novaNotificacao.id = new Date().getTime();
       state.notificacoes.push(novaNotificacao);
@@ -81,6 +85,9 @@ export const store = createStore<Estado>({
     },
     [CADASTRAR_TAREFA]({commit}, tarefa: ITarefa) {
       return http.post("/tarefas", tarefa).then(resposta => commit(ADICIONA_TAREFA, resposta.data))
+    },
+    [ALTERAR_TAREFA]({commit}, tarefa: ITarefa) {
+      return http.put(`/projetos/${tarefa.id}`, tarefa).then(() => commit(ALTERA_TAREFA, tarefa))
     },
   },
 });
