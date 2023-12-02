@@ -6,10 +6,10 @@
     },
     {
       "duracaoEmSegundos": 2,
-      "descricao": "Refatorando vuexz",
+      "descricao": "Refatorando vue",
       "projeto": {
-        "id": 1,
-        "nome": "Alura Tracker"
+        "nome": "Vue",
+        "id": 2
       },
       "id": 2
     }
@@ -26,10 +26,10 @@
     },
     {
       "duracaoEmSegundos": 2,
-      "descricao": "Refatorando vuex",
+      "descricao": "Refatorando",
       "projeto": {
-        "id": 1,
-        "nome": "Alura Tracker"
+        "nome": "Vue",
+        "id": 2
       },
       "id": 2
     }
