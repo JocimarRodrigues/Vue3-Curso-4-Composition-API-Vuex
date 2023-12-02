@@ -6,36 +6,28 @@ import  ITarefa  from "@/interfaces/ITarefa";
 import http from '@/http'
 import { OBTER_TAREFAS, CADASTRAR_TAREFA, ALTERAR_TAREFA } from './tipo-acoes'
 import { EstadoProjeto, projeto } from './modulos/projeto';
+import { EstadoTarefa, tarefa } from './modulos/tarefas';
 
 
 export interface Estado {
-  tarefas: ITarefa[],
   notificacoes: INotificao[],
-  projeto: EstadoProjeto
+  projeto: EstadoProjeto,
+  tarefa: EstadoTarefa
 }
 
 export const key: InjectionKey<Store<Estado>> = Symbol()
 
 export const store = createStore<Estado>({
   state: {
-    tarefas: [],
     notificacoes: [],
     projeto: {
       projetos: []
+    },
+    tarefa: {
+      tarefas: []
     }
   },
   mutations: {
-
-    [DEFINIR_TAREFAS](state, tarefas: ITarefa[]) {
-      state.tarefas = tarefas;
-    },
-    [ADICIONA_TAREFA](state, tarefa: ITarefa) {
-      state.tarefas.push(tarefa)
-    },
-    [ALTERA_TAREFA](state, tarefa: ITarefa) {
-      const index = state.tarefas.findIndex((resp) => resp.id == tarefa.id);
-      state.tarefas[index] = tarefa;
-    },
     [NOTIFICAR](state, novaNotificacao: INotificao) {
       novaNotificacao.id = new Date().getTime();
       state.notificacoes.push(novaNotificacao);
@@ -62,6 +54,7 @@ export const store = createStore<Estado>({
   },
   modules: {
     projeto,
+    tarefa
   }
 });
 
