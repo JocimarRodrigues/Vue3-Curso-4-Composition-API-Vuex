@@ -1,0 +1,42 @@
+{
+  "projetos": [
+    {
+      "id": 1,
+      "duracaoEmSegundos": 120,
+      "descricao": "Configuração do ambientex",
+      "projeto": {
+        "id": 1,
+        "nome": "Alura Tracker"
+      }
+    },
+    {
+      "duracaoEmSegundos": 2,
+      "descricao": "Refatorando vue",
+      "projeto": {
+        "nome": "Vue",
+        "id": 2
+      },
+      "id": 2
+    }
+  ],
+  "tarefas": [
+    {
+      "id": 1,
+      "duracaoEmSegundos": 120,
+      "descricao": "Configuração do ambiente",
+      "projeto": {
+        "id": 1,
+        "nome": "Alura Tracker"
+      }
+    },
+    {
+      "duracaoEmSegundos": 2,
+      "descricao": "Refatorando",
+      "projeto": {
+        "nome": "Vue",
+        "id": 2
+      },
+      "id": 2
+    }
+  ]
+}
