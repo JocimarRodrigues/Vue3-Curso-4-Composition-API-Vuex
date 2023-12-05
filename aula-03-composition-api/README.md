@@ -342,3 +342,183 @@ export default defineComponent({
 - Importante lembrar que quando você trabalha com uma variável reativa(que muda ao longo do projeto, usando o REF) você precisa usar o .value depois de chamar a variável
 - Note também que como você não está mais usando a store e o notificar fora do setup, porque toda a lógica que utiliza ele, fica dentro do setup e oq você quer é o resultado, não precisa mais exportar os dois
 - Basta exportar a variável reativa e a funcão que vai fazer a lógica de salvar os projetos, dessa forma fica bem mais legível o código.
+
+# Emitindo eventos
+
+- Quando tu usa o setup, ele tem dois parametros q é a proprs e o contexto, o responsável por transmitir os emit é o contexto
+- O contexto é responsável por várias coisas do vue, e um delas é o emit, caso tu queria melhorar mais ainda o código você pode desestrutura o contexto e pegar apenas o emit, o que funciona também.
+
+### Usando OPTIONS API
+components/Formulario.vue
+```vue
+<script lang="ts">
+import { computed, defineComponent } from 'vue';
+import Temporizador from './Temporizador.vue'
+import { useStore } from 'vuex';
+
+import {key} from '@/store'
+import { NOTIFICAR } from '@/store/tipo-mutations';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+
+export default defineComponent({
+    name: "FormulárioComponent",
+    emits: ['aoSalvarTarefa'],
+    components: {
+        Temporizador
+    },
+    data() {
+        return {
+            descricao: '',
+            idProjeto: '',
+        }
+    },
+    methods: {
+        salvarTarefa(tempoDecorrido: number): void {
+            const projeto = this.projetos.find(proj => proj.id == this.idProjeto)
+            if(!projeto) {
+                this.store.commit(NOTIFICAR, {
+                    titulo: 'Ops!',
+                    texto: 'Selecione um projeto antes de finalizar a tarefa!',
+                    tipo: TipoNotificacao.FALHA,
+                })
+                return;
+            }
+            this.$emit('aoSalvarTarefa', {
+                duracaoEmSegundos: tempoDecorrido,
+                descricao: this.descricao,
+                projeto: projeto
+            })
+            this.descricao = ''
+        }
+    },
+    setup() {
+        const store = useStore(key)
+        return {
+            projetos: computed(() => store.state.projeto.projetos),
+            store
+        }
+    }
+})
+</script>
+```
+
+## Usando Composition API
+
+### Usando o contexto
+
+components/Formulario.vue
+```vue
+<script lang="ts">
+import { computed, defineComponent, ref } from 'vue';
+import Temporizador from './Temporizador.vue'
+import { useStore } from 'vuex';
+
+import {key} from '@/store'
+import { NOTIFICAR } from '@/store/tipo-mutations';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+
+export default defineComponent({
+    name: "FormulárioComponent",
+    emits: ['aoSalvarTarefa'],
+    components: {
+        Temporizador
+    },
+    setup(props, contexto) {
+        const store = useStore(key)
+
+        const descricao = ref("")
+        const idProjeto = ref("")
+
+        const projetos = computed(() => store.state.projeto.projetos)
+
+        const salvarTarefa = (tempoDecorrido: number): void => {
+            const projeto = projetos.value.find(proj => proj.id == idProjeto.value)
+            if(!projeto) {
+                store.commit(NOTIFICAR, {
+                    titulo: 'Ops!',
+                    texto: 'Selecione um projeto antes de finalizar a tarefa!',
+                    tipo: TipoNotificacao.FALHA,
+                })
+                return;
+            }
+            contexto.emit('aoSalvarTarefa', { // Aqui
+                duracaoEmSegundos: tempoDecorrido,
+                descricao: descricao.value,
+                projeto: projeto
+            })
+            descricao.value = ''
+        }
+
+        return {
+            descricao,
+            idProjeto,
+            projetos,
+            salvarTarefa
+        }
+    }
+})
+</script>
+
+<style>
+.formulario {
+    color: var(--texto-primario);
+    background-color: var(--bg-primario);
+}
+</style>
+```
+
+### Desestruturando o contexto
+
+components/Formulario.vue
+```vue
+<script lang="ts">
+import { computed, defineComponent, ref } from 'vue';
+import Temporizador from './Temporizador.vue'
+import { useStore } from 'vuex';
+
+import {key} from '@/store'
+import { NOTIFICAR } from '@/store/tipo-mutations';
+import { TipoNotificacao } from '@/interfaces/INotificacao';
+
+export default defineComponent({
+    name: "FormulárioComponent",
+    emits: ['aoSalvarTarefa'],
+    components: {
+        Temporizador
+    },
+    setup(props, {emit}) { // Aqui
+        const store = useStore(key)
+
+        const descricao = ref("")
+        const idProjeto = ref("")
+
+        const projetos = computed(() => store.state.projeto.projetos)
+
+        const salvarTarefa = (tempoDecorrido: number): void => {
+            const projeto = projetos.value.find(proj => proj.id == idProjeto.value)
+            if(!projeto) {
+                store.commit(NOTIFICAR, {
+                    titulo: 'Ops!',
+                    texto: 'Selecione um projeto antes de finalizar a tarefa!',
+                    tipo: TipoNotificacao.FALHA,
+                })
+                return;
+            }
+            emit('aoSalvarTarefa', {
+                duracaoEmSegundos: tempoDecorrido,
+                descricao: descricao.value,
+                projeto: projeto
+            })
+            descricao.value = ''
+        }
+
+        return {
+            descricao,
+            idProjeto,
+            projetos,
+            salvarTarefa
+        }
+    }
+})
+</script>
+```

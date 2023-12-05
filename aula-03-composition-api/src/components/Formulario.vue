@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 import Temporizador from './Temporizador.vue'
 import { useStore } from 'vuex';
 
@@ -34,36 +34,62 @@ export default defineComponent({
     components: {
         Temporizador
     },
-    data() {
-        return {
-            descricao: '',
-            idProjeto: '',
-        }
-    },
+    // data() {
+    //     return {
+    //         descricao: '',
+    //         idProjeto: '',
+    //     }
+    // },
     methods: {
-        salvarTarefa(tempoDecorrido: number): void {
-            const projeto = this.projetos.find(proj => proj.id == this.idProjeto)
+        // salvarTarefa(tempoDecorrido: number): void {
+        //     const projeto = this.projetos.find(proj => proj.id == this.idProjeto)
+        //     if(!projeto) {
+        //         this.store.commit(NOTIFICAR, {
+        //             titulo: 'Ops!',
+        //             texto: 'Selecione um projeto antes de finalizar a tarefa!',
+        //             tipo: TipoNotificacao.FALHA,
+        //         })
+        //         return;
+        //     }
+        //     this.$emit('aoSalvarTarefa', {
+        //         duracaoEmSegundos: tempoDecorrido,
+        //         descricao: this.descricao,
+        //         projeto: projeto
+        //     })
+        //     this.descricao = ''
+        // }
+    },
+    setup(props, {emit}) {
+        const store = useStore(key)
+
+        const descricao = ref("")
+        const idProjeto = ref("")
+
+        const projetos = computed(() => store.state.projeto.projetos)
+
+        const salvarTarefa = (tempoDecorrido: number): void => {
+            const projeto = projetos.value.find(proj => proj.id == idProjeto.value)
             if(!projeto) {
-                this.store.commit(NOTIFICAR, {
+                store.commit(NOTIFICAR, {
                     titulo: 'Ops!',
                     texto: 'Selecione um projeto antes de finalizar a tarefa!',
                     tipo: TipoNotificacao.FALHA,
                 })
                 return;
             }
-            this.$emit('aoSalvarTarefa', {
+            emit('aoSalvarTarefa', {
                 duracaoEmSegundos: tempoDecorrido,
-                descricao: this.descricao,
+                descricao: descricao.value,
                 projeto: projeto
             })
-            this.descricao = ''
+            descricao.value = ''
         }
-    },
-    setup() {
-        const store = useStore(key)
+
         return {
-            projetos: computed(() => store.state.projeto.projetos),
-            store
+            descricao,
+            idProjeto,
+            projetos,
+            salvarTarefa
         }
     }
 })
