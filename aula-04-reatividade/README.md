@@ -105,3 +105,43 @@ export default defineComponent({
 - Você criou a variável e usou o ref para fazer a refencia(variável reativa, q muda valor)
 - Depois você usou o método computed para fazer uma filtragem e retornar um valor
 - Importante destacar que na lógica atual que está aí a filtragem está sendo feita nos dados Locais, isso é nos dados que já vieram da API, na próx aula esse método vai ser aplicado para fazer a filtragem direto na API.
+
+
+# Watch Effect
+
+- Esse hook é responsável por ficar analisando uma dependencia e executando o código dentro dele toda vez q houver uma mudança nessa dependencia
+
+Dê uma olhada no código abaixo
+views/Tarefas.vue
+```ts
+        watchEffect(() => {
+            store.dispatch(OBTER_TAREFAS, filtro.value)
+        })
+```
+- Note que toda vez que a dependencia filtro.value mudar o watchEffect vai disprar o dispatch q vai chamar a Action OBTER_TAREFAS
+
+- Bom com isso, tu vai poder usar a Action, passando para ela como parametro o resultado do filtro.value, assim podendo utilizar ele na sua lógica de filtro, dessa vez na api.
+store/modulos/tarefas/index.ts
+```ts 
+  actions: {
+    [OBTER_TAREFAS]({ commit }, filtro: string) {
+      let url = 'tarefas'
+      if(filtro) {
+        url += '?descricao=' + filtro
+      }
+
+      http.get(url)
+        .then(response => commit(DEFINIR_TAREFAS, response.data))
+    },
+  }
+```
+
+- Importante destacar que nessa lógica que você criou, o resultado da busca só vai ser possível se o valor do input for exatamente igual ao valor da tarefa que está na api, o nome precisa ser exato.
+
+# Para saber mais Watch vs WatchEffect
+
+- https://cursos.alura.com.br/course/vue3-composition-api-vuex/task/100156
+
+### Documentação Oficial
+
+- https://vuejs.org/api/reactivity-core.html#watch
