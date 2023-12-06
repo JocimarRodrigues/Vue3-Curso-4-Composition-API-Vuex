@@ -145,3 +145,10 @@ store/modulos/tarefas/index.ts
 ### Documentação Oficial
 
 - https://vuejs.org/api/reactivity-core.html#watch
+
+# Proxy e Reflect
+
+- Bom, explicando pro baixo dos panos como o ref do vue funciona a reatividade, o vue utiliza os Proxy do JavaScript puro.
+- É bom dar uma lida na documentação oficial caso tenha problemas no futuro com o uso deles
+- Documentação oficial Proxy => https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+- Documentação oficial Reflect => https://developer.mozilla.org/pt-BR/docs/Web/JavaScript/Reference/Global_Objects/Reflect
